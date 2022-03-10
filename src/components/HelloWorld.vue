@@ -1,3 +1,4 @@
+/* eslint-disable vue/no-parsing-error */
 <template>
   <v-app>
     <v-container>
@@ -15,7 +16,18 @@
             <br />
             <span>cosas sobre él</span>
           </h1>
-          <v-text-field ref="form" v-model="nombre" label="Tu Nombre" required :rules="nameRules"></v-text-field>
+          <v-text-field ref="form" v-model="nombre" label="Tu Nombre" required></v-text-field>
+  <v-alert  v-if="errors.length"
+  color="red"
+  type="warning"
+  style="width: 300px; margin: -15px auto 15px auto;">
+  <p>
+    <b>Sin tu nombre no hay datos:</b>
+    <ul>
+      <li v-for="error in errors" v-bind:key="error">{{ error }}</li>
+    </ul>
+  </p>
+  </v-alert>
           <div class="check-container" id="selector">
             <input type="checkbox" id="checkbox" v-model="checked" />
             <label for="checkbox">Selecciona si te identificas como género no binario.</label>
@@ -25,12 +37,19 @@
             color="#6B5CA5"
             class="mr-4"
             theme="dark"
-            @click="loading = true; sended = true; getAllData(); checkForm(); validate()"
+            @click="loading = true; sended = true; getAllData(); checkForm()"
           >Enviar</v-btn>
+                    <v-btn
+            color="#72195a"
+            class="mr-4"
+            theme="dark"
+            @click="reloadPage()"
+          >Refresh</v-btn>
         </v-col>
       </v-row>
     </v-container>
     <v-progress-linear
+    v-if="!errors.length"
       :active="loading"
       :indeterminate="loading"
       absolute
@@ -40,7 +59,7 @@
     ></v-progress-linear>
     <v-scale-transition v-if="sended === true">
       <div class="container-margin" v-if="!loading">
-        <v-card max-width="450" class="mx-auto">
+        <v-card max-width="450" class="mx-auto" v-if="!errors.length">
           <v-container>
             <v-row dense>
               <v-col cols="12">
@@ -106,6 +125,7 @@ export default {
     age: null,
     gender: {},
     estadistica: {},
+    errors: [],
     ecosystem: [
       {
         text: 'vuetify-loader',
@@ -121,9 +141,6 @@ export default {
       },
     ],
   }),
-  validate() {
-    this.$refs.form.validate()
-  },
   methods: {
     async getAllData() {
       this.getName();
@@ -147,12 +164,18 @@ export default {
       let countriesWithEmojis = countries.map(this.emojifyCountry)
       this.estadistica.countries = countriesWithEmojis.slice(0, 2);
     },
-    nameRules: [
-      v => !!v || 'Name is required',
-    ],
     emojifyCountry(countryCode) {
       const emoji = emojiFlags.countryCode(countryCode);
       return `${emoji.name}`
+    },
+checkForm:function(e) {
+      if(this.nombre) return true;
+      this.errors = [];
+      if(!this.nombre) this.errors.push("El nombre es obligatorio.");
+      e.preventDefault();
+    },
+    reloadPage() {
+      window.location.reload()
     }
   },
   watch: {
