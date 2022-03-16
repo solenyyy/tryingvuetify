@@ -22,7 +22,7 @@
   type="warning"
   style="width: 300px; margin: -15px auto 15px auto;">
   <p>
-    <b>Sin tu nombre no hay datos:</b>
+    <b>Ha ocurrido un problema:</b>
     <ul>
       <li v-for="error in errors" v-bind:key="error">{{ error }}</li>
     </ul>
