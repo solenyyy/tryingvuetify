@@ -37,7 +37,7 @@
             color="#6B5CA5"
             class="mr-4"
             theme="dark"
-            @click="loading = true; sended = true; getAllData(); checkForm()"
+            @click="loading = true; sended = true; getAllData()"
           >Enviar</v-btn>
                     <v-btn
             color="#72195a"
@@ -143,9 +143,18 @@ export default {
   }),
   methods: {
     async getAllData() {
-      this.getName();
-      this.getGender();
-      this.getNation();
+      if (!this.nombre)
+        this.errors = [],
+          this.errors.push("El nombre es obligatorio.")
+      else if (this.nombre.length <= 3)
+        this.errors = [],
+          this.errors.push("El nombre tiene que ser mayor a 3 caracteres.")
+      else {
+        this.errors = []
+        const tasks = [this.getName(), this.getGender(), this.getNation()];
+        await Promise.all(tasks)
+        this.loading = false
+      }
     },
     async getName() {
       const { data } = await axios.get(`https://api.agify.io?name=${this.nombre}`);
@@ -168,12 +177,6 @@ export default {
       const emoji = emojiFlags.countryCode(countryCode);
       return `${emoji.name}`
     },
-checkForm:function(e) {
-      if(this.nombre) return true;
-      this.errors = [];
-      if(!this.nombre) this.errors.push("El nombre es obligatorio.");
-      e.preventDefault();
-    },
     reloadPage() {
       window.location.reload()
     }
@@ -181,8 +184,6 @@ checkForm:function(e) {
   watch: {
     loading(val) {
       if (!val) return
-
-      setTimeout(() => (this.loading = false), 1500)
     },
   },
 }
